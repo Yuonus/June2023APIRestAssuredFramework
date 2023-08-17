@@ -72,7 +72,10 @@ public class CreateUserTest extends BaseTest {
 						.assertThat().statusCode(APIHttpStatus.OK_200.getCode())
 							.and()
 								.assertThat().body("id", equalTo(userId));
+		
+		System.out.println("End test"); // this was added to practice git
 	}
+	
 	
 	/*		Note
 	 * If you run this whole class, it will fail in Get Call. Because the Authorization header in Get call will
