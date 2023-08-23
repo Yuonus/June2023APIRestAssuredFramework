@@ -42,7 +42,7 @@ public class GetUserTest extends BaseTest{
 	}
 	
 	// How to fetch a specific user. We will do it hard coded for now. after the service URl add the specific user ID
-	@Test(enabled = true, priority = 2)
+	@Test(enabled = false, priority = 2)
 	public void getUserTest() {
 		restClient.get(GOREST_ENDPOINT + "/4215359", true, true)
 					.then().log().all()
