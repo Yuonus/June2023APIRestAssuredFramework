@@ -8,13 +8,13 @@
 			class-name="com.qa.gorest.listeners.ExtentReportListener" />
 	</listeners>
 
-<!-- 	<test name="Go Rest API Test"> -->
-<!-- 		<parameter name="baseURI" value="https://gorest.co.in" /> -->
+	<test name="Go Rest API Test">
+		<parameter name="baseURI" value="https://gorest.co.in" />
 
-<!-- 		<classes> -->
-<!-- 			<class name="com.qa.gorest.tests.GetUserTest" />			 -->
-<!-- 		</classes> -->
-<!-- 	</test> -->
+		<classes>
+			<class name="com.qa.gorest.tests.GetUserTest" />			
+		</classes>
+	</test>
 	
 	<test name="Go Rest API Create Test">
 		<parameter name="baseURI" value="https://gorest.co.in" />
