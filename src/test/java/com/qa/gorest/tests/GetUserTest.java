@@ -46,7 +46,7 @@ public class GetUserTest extends BaseTest{
 	public void getUserTest() {
 		restClient.get(GOREST_ENDPOINT + "/4654063", true, true)
 					.then().log().all()
-						.assertThat().statusCode(APIHttpStatus.OK_200.getCode());
+						.assertThat().statusCode(APIHttpStatus.OK_200.getCode()); 
 	}
 	/*	
 	 * --> Get the user where name = Sabawoon & status = active
