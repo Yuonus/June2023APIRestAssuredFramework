@@ -64,6 +64,7 @@ public class GetUserTest extends BaseTest{
 		restClient.get(GOREST_ENDPOINT, queryParams, null,true, true)
 						.then().log().all()
 							.assertThat().statusCode(APIHttpStatus.OK_200.getCode());
+		
 	}
 	
 	/*		Note
