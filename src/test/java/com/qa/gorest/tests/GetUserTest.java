@@ -30,6 +30,7 @@ public class GetUserTest extends BaseTest{
 	@BeforeMethod
 	public void getUserSetup() {
 		restClient = new RestClient(prop, baseURI);
+		//
 	}
 	
 
