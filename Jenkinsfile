@@ -43,38 +43,47 @@ pipeline
              
                 
                 
-        stage('Run Docker Image with Regression Tests') {
+      stage('Run Docker Image with Regression Tests') {
     steps {
         script {
-        
-        def exitCode = bat(script: "docker run --name apitesting${BUILD_NUMBER} -e MAVEN_OPTS='-Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml' sabawoontech/apitest:latest", returnStatus: true)
-            if (exitCode != 0) {
-                currentBuild.result = 'FAILURE' // Mark the build as failed if tests fail
-            }
+            def suiteXmlFilePath = 'src/test/resources/testrunners/testng_regression.xml'
+            def dockerCommand = """
+                docker run --name apitesting${BUILD_NUMBER} \
+                -v "${WORKSPACE}/reports:/app/reports" \
+                naveenkhunteta/apitestnewone:latest \
+                /bin/bash -c "mvn test -Dsurefire.suiteXmlFiles=${suiteXmlFilePath}"
+            """
             
-            // Even if tests fail, copy the report (if present)
+            def exitCode = bat(script: dockerCommand, returnStatus: true)
+            
+            if (exitCode != 0) {
+                currentBuild.result = 'FAILURE'
+            }
             bat "docker start apitesting${BUILD_NUMBER}"
-       	   // bat "sleep 60"
-            bat "docker cp apitesting${BUILD_NUMBER}:/app/reports/APIExecutionReport.html ${WORKSPACE}/reports"
+            bat "docker cp apitesting${BUILD_NUMBER}:/app/target/APIExecutionReport.html ${WORKSPACE}/target"
             bat "docker rm -f apitesting${BUILD_NUMBER}"
-       			 }
-    		}
-		}
-		
-		
+        }
+    }
+}
+
+
+
 		
 		stage('Publish Regression Extent Report'){
             steps{
                      publishHTML([allowMissing: false,
                                   alwaysLinkToLastBuild: false, 
                                   keepAll: false, 
-                                  reportDir: 'reports', 
+                                  reportDir: 'target', 
                                   reportFiles: 'APIExecutionReport.html', 
                                   reportName: 'API HTML Regression Extent Report', 
                                   reportTitles: ''])
             }
         }
         
+        
+         
+
          
     }
 }
