@@ -5,6 +5,13 @@ pipeline
     tools{
     	maven 'maven'
         }
+        
+    environment{
+   
+        BUILD_NUMBER = "${BUILD_NUMBER}"
+   
+    }
+    
 
     stages 
     {
@@ -24,7 +31,7 @@ pipeline
                 }
             }
         }
-        
+
         
         
         stage("Deploy to QA"){
@@ -32,79 +39,42 @@ pipeline
                 echo("deploy to qa done")
             }
         }
+             
+             
                 
-        stage('Regression API Automation Test') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/Yuonus/June2023APIRestAssuredFramework.git'
-                    bat "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml"
-                    
-                }
-            }
-        }
                 
-     
-        stage('Publish Allure Reports') {
-           steps {
-                script {
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: '/allure-results']]
-                    ])
-                }
+        stage('Run Docker Image with Regression Tests') {
+    steps {
+        script {
+        
+        def exitCode = bat(script: "docker run --name apitesting${BUILD_NUMBER} -e MAVEN_OPTS='-Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_regression.xml' sabawoontech/apitest:latest", returnStatus: true)
+            if (exitCode != 0) {
+                currentBuild.result = 'FAILURE' // Mark the build as failed if tests fail
             }
-        }
-        
-        
-        stage('Publish Extent Report'){
+            
+            // Even if tests fail, copy the report (if present)
+            bat "docker start apitesting${BUILD_NUMBER}"
+       	   // bat "sleep 60"
+            bat "docker cp apitesting${BUILD_NUMBER}:/app/reports/APIExecutionReport.html ${WORKSPACE}/reports"
+            bat "docker rm -f apitesting${BUILD_NUMBER}"
+       			 }
+    		}
+		}
+		
+		
+		
+		stage('Publish Regression Extent Report'){
             steps{
                      publishHTML([allowMissing: false,
                                   alwaysLinkToLastBuild: false, 
                                   keepAll: false, 
                                   reportDir: 'reports', 
                                   reportFiles: 'APIExecutionReport.html', 
-                                  reportName: 'API HTML Extent Report', 
+                                  reportName: 'API HTML Regression Extent Report', 
                                   reportTitles: ''])
             }
         }
         
-        
-         stage("Deploy to STAGE"){
-            steps{
-                echo("deploy to STAGE done")
-            }
-        }
-        
-        stage('Sanity Automation Test') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    git 'https://github.com/Yuonus/June2023APIRestAssuredFramework.git'
-                    bat "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testrunners/testng_sanity.xml"
-                    
-                }
-            }
-        } 
-        
-        
-         stage('Publish Extent Report after Sanity'){
-            steps{
-                     publishHTML([allowMissing: false,
-                                  alwaysLinkToLastBuild: false, 
-                                  keepAll: false, 
-                                  reportDir: 'reports', 
-                                  reportFiles: 'APIExecutionReport.html', 
-                                  reportName: 'API HTML Sanity Extent Report', 
-                                  reportTitles: ''])
-            }
-        }
-        
-        stage("Deploy to PROD"){
-            steps{
-                echo("deploy to PROD")
-            }
-        }
+         
     }
 }
